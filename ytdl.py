@@ -5,6 +5,7 @@ import os
 yt = None
 res = None
 stream = None
+file_path = None
 #see if the user wants to download audio or video. This way they can get both
 
 
@@ -13,13 +14,15 @@ stream = None
 
 #Define Download location 
 def download_location():
-    
-
-
-
-
-
-
+    global file_path
+    while True:
+        file_path = input('Please enter the Folder to save the Video in:\n')
+        x = os.path.exists(path = str(file_path))
+        if x == True:
+            break
+        else:
+            print('The specified Folder does not exit')
+            continue
 
 #Select the video that the user wants to use
 def video_select():
@@ -50,51 +53,36 @@ def resoultion_select():
 
 #Select the stream to download based on the itag
 def download_stream():
+    global file_path
     global yt
     while True:
         itag = input('Please Enter the Itag of the stream you want to download:\n')
         try:
-            yt.streams.get_by_itag(str(itag)).download()
+            yt.streams.get_by_itag(str(itag)).download(str(file_path))
             print('The video has been downloaded')
             return True
         except:
             print('You have entered an invalid Itag')
             continue
             
-            
+def Main():
+    download_location()
+    video_select()
+    resoultion_select()
+    download_stream()
+    exit()
 
-#C:\Users\redjo\Videos\Youtube Downloads
-
-#download function for both video and audio May split if its needed
-
-
-
-
-#Someway to cycle to program back to the top so that user can download more then 1 video.
-
-#might add a multi downloader to download more then 1 video at a time
-
-#download location selector
+Main()
 
 
-video_select()
-resoultion_select()
-download_stream()
+
 
 """ To do list
-Correct resoultion_select func I want to have it display the list 
-of streams based on resltion and then have user select stream by itag based on the list
-Implement a download func
-Give users a choice of downloading audio stream or video so users can get both with the same program.
-have program cycle back to the start unelss the user exits with a command """
+Add a function to change between audio and video downloading
+Possibly do batch downloading/playlist downloading audio and video
+clean up the code and make a proper Main function that does more then just call all the other functions in order.
 
 
-
-
-
-
-
+"""
 
 #test video https://www.youtube.com/watch?v=mODI4-cRhPE
-
-"""   """
