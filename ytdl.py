@@ -43,7 +43,7 @@ def audio_download():
 def download_location():
     global file_path
     while True:
-        file_path = input('Please enter the Folder to save the Video in:\n')
+        file_path = input('Please enter the Folder to save the Video in\nPlease enter the Full Path')
         x = os.path.exists(path = str(file_path))
         if x == True:
             break
@@ -93,7 +93,6 @@ def download_stream():
         except:
             print('You have entered an invalid Itag')
             continue
-
 
 def Main():
     global av_switch
