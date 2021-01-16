@@ -1,6 +1,7 @@
 from pytube import YouTube
 import os
 from tkinter import *
+from tkinter import filedialog
 
 #global variables
 yt = None
@@ -8,6 +9,7 @@ res = None
 stream = None
 file_path = None
 av_swtich = None
+video = None
 
 
 #see if the user wants to download audio or video
@@ -108,10 +110,20 @@ def Main():
         audio_download()
 
 
-def test_print():
-    global res
-    selected_res = res.get()
-    print (selected_res)
+def print_video_info():
+    global video
+    global yt
+    res = []
+    video = ent_url.get()
+    yt = YouTube(video)
+    print(yt.title)
+    for i in yt.streams.filter(type = "video"): res.append(i.resolution)
+    resolution = [] 
+    [resolution.append(x) for x in res if x not in resolution] 
+    resolution.sort()
+    print(str(resolution))
+    
+    
 
     
 #Main()
@@ -122,23 +134,30 @@ window.minsize(width = 450, height = 500)
 
 
 #video info gathering
-frm_url = Frame(master = window, height = 100, width = 400,)
+frm_url = Frame(master = window, height = 100, width = 400, )
 frm_url.pack_propagate(0)
-lbl_url = Label(master = frm_url, text = "Please Enter Video URL")
-ent_url = Entry(master = frm_url)
-btn_download = Button(master = frm_url, text = "Download",  command = test_print)
-btn_videoinfo = Button(master = frm_url,text = "View Video Info")
-line = Frame(height = 1, bg = "black")
 frm_url.pack()
+
+lbl_url = Label(master = frm_url, text = "Please Enter Video URL")
 lbl_url.pack(pady = 10)
+
+ent_url = Entry(master = frm_url)
 ent_url.pack(pady = 10)
+
+btn_download = Button(master = frm_url, text = "Download")
+btn_videoinfo = Button(master = frm_url,text = "View Video Info", command = print_video_info)
 btn_download.pack(side = LEFT, padx = 50)
 btn_videoinfo.pack(side = RIGHT, padx = 50)
-line.pack(fill = X, pady = 5)
 
+line = Frame(height = 1, bg = "black")
+line.pack(fill = X, pady = 20, padx = 5)
 
-#stream and resoultion select, audio or video selection
-frm_stream = Frame(master = window, height = 300, width = 400)
+frm_res = Frame(master = window)
+frm_res.pack()
+
+lbl_res = Label(master = frm_res, text = "Please Select the Resoultion")
+lbl_res.pack()
+
 res = StringVar(window, "480p")
 values ={'480p' : '480p',
 '720p' : '720p',
@@ -146,10 +165,8 @@ values ={'480p' : '480p',
 '1440p' : '1440p',
 '4k' : '4k',
 }
-row = 0
 for (text, value) in values.items():
-    Radiobutton(window, text = text, variable = res, value = value).pack(side = LEFT, padx = 20)
-
+    Radiobutton(master = frm_res, text = text, variable = res, value = value).pack(side = LEFT, padx = 20)
 
 
 
@@ -161,3 +178,5 @@ for (text, value) in values.items():
 
 
 window.mainloop()
+
+
