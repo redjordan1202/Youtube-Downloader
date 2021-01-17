@@ -4,7 +4,6 @@ from tkinter import *
 from tkinter import filedialog
 
 #global variables
-yt = None
 res = None
 stream = None
 file_path = None
@@ -56,16 +55,32 @@ def download_location():
 
 #Select the video that the user wants to use
 def video_select():
+    resoultions = []
+    yt = YouTube(ent_url.get())
+    for i in yt.streams.filter(type = "video"): resoultions.append(i.resolution)
+    ent_yt_title.config(state = NORMAL)
+    ent_yt_title.insert(0, str(yt.title))
+    ent_yt_title.config(state = DISABLED)
+    print(str(resoultions))
+    
+    
+
+
+def print_video_info():
+    global video
     global yt
-    while True:
-        video = input('Please enter the video URL:\n')
-        try:
-            yt = YouTube(video)
-            print('The title of the video you selected is: ' + yt.title)
-            return False
-        except:
-            print('The URL is not Valid\n')
-            continue
+    res = []
+    video = ent_url.get()
+    yt = YouTube(video)
+    print(yt.title)
+    for i in yt.streams.filter(type = "video"): res.append(i.resolution)
+    resolution = [] 
+    [resolution.append(x) for x in res if x not in resolution] 
+    resolution.sort()
+    
+
+
+    
 
 #Select resoultion and display possible stings
 def resoultion_select():
@@ -97,7 +112,7 @@ def download_stream():
             print('You have entered an invalid Itag')
             continue
 
-def Main():
+def main():
     global av_switch
     print('Welcome to the Youtube Video Downloader\n')
     download_location()
@@ -110,67 +125,44 @@ def Main():
         audio_download()
 
 
-def print_video_info():
-    global video
-    global yt
-    res = []
-    video = ent_url.get()
-    yt = YouTube(video)
-    print(yt.title)
-    for i in yt.streams.filter(type = "video"): res.append(i.resolution)
-    resolution = [] 
-    [resolution.append(x) for x in res if x not in resolution] 
-    resolution.sort()
-    print(str(resolution))
-    
-    
 
     
-#Main()
+
 
 window = Tk()
 window.minsize(width = 450, height = 500)
 
 
+""" video Info gaterhing """
 
-#video info gathering
-frm_url = Frame(master = window, height = 100, width = 400, )
+frm_url = Frame(master = window, height = 200, width = 400, )
 frm_url.pack_propagate(0)
 frm_url.pack()
 
 lbl_url = Label(master = frm_url, text = "Please Enter Video URL")
 lbl_url.pack(pady = 10)
 
-ent_url = Entry(master = frm_url)
+ent_url = Entry(master = frm_url, width = 300, justify = 'center')
 ent_url.pack(pady = 10)
 
-btn_download = Button(master = frm_url, text = "Download")
-btn_videoinfo = Button(master = frm_url,text = "View Video Info", command = print_video_info)
-btn_download.pack(side = LEFT, padx = 50)
-btn_videoinfo.pack(side = RIGHT, padx = 50)
+btn_info = Button(master = frm_url, text = "Select Video", command = video_select)
+btn_info.pack()
 
-line = Frame(height = 1, bg = "black")
-line.pack(fill = X, pady = 20, padx = 5)
+line0 = Frame( master = frm_url, height = 1, bg = "black")
+line0.pack(fill = X, pady = 20, padx = 5)
 
-frm_res = Frame(master = window)
-frm_res.pack()
+lbl_yt_title = Label(master = frm_url, text = "Video Title")
+lbl_yt_title.pack(pady = 5)
 
-lbl_res = Label(master = frm_res, text = "Please Select the Resoultion")
-lbl_res.pack()
+ent_yt_title = Entry(master = frm_url, text = "", width = 300, justify = 'center', state = DISABLED)
+ent_yt_title.pack()
 
-res = StringVar(window, "480p")
-values ={'480p' : '480p',
-'720p' : '720p',
-'1080p' : '1080p',
-'1440p' : '1440p',
-'4k' : '4k',
-}
-for (text, value) in values.items():
-    Radiobutton(master = frm_res, text = text, variable = res, value = value).pack(side = LEFT, padx = 20)
+line1 = Frame( master = frm_url, height = 1, bg = "black")
+line1.pack(fill = X, pady = 20, padx = 5)
 
-
-
-
+"""Resoultion Selection"""
+frm_res = Frame (master = window)
+frm_res.grid()
 
 
 
