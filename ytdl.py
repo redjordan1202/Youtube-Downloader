@@ -1,14 +1,10 @@
 from pytube import YouTube
 import os
-from tkinter import *
+import tkinter as tk
 from tkinter import filedialog
 
-#global variables
-res = None
-stream = None
-file_path = None
-av_swtich = None
-video = None
+
+
 
 
 #see if the user wants to download audio or video
@@ -58,25 +54,15 @@ def video_select():
     resoultions = []
     yt = YouTube(ent_url.get())
     for i in yt.streams.filter(type = "video"): resoultions.append(i.resolution)
-    ent_yt_title.config(state = NORMAL)
+    ent_yt_title.config(state = tk.NORMAL)
     ent_yt_title.insert(0, str(yt.title))
-    ent_yt_title.config(state = DISABLED)
+    ent_yt_title.config(state = tk.DISABLED)
     print(str(resoultions))
     
     
 
 
-def print_video_info():
-    global video
-    global yt
-    res = []
-    video = ent_url.get()
-    yt = YouTube(video)
-    print(yt.title)
-    for i in yt.streams.filter(type = "video"): res.append(i.resolution)
-    resolution = [] 
-    [resolution.append(x) for x in res if x not in resolution] 
-    resolution.sort()
+
     
 
 
@@ -112,63 +98,114 @@ def download_stream():
             print('You have entered an invalid Itag')
             continue
 
-def main():
-    global av_switch
-    print('Welcome to the Youtube Video Downloader\n')
-    download_location()
-    video_select()
-    av_select()
-    if av_switch == '1':
-        resoultion_select()
-        download_stream()
-    else:
-        audio_download()
 
 
 
     
 
 
-window = Tk()
-window.minsize(width = 450, height = 500)
+class MainApplication:
+    def __init__(self,master, *args, **kwargs):
+        self.master = master
+        """video Select"""
+        self.frm_url = tk.Frame(master = self.master, height = 260, width = 450, highlightbackground = 'black', highlightthickness = 1)
+        self.frm_url.pack_propagate(0)
+        self.frm_url.pack(pady = 5)
+
+        self.lbl_url = tk.Label(master = self.frm_url, text = "Please Enter Video URL")
+        self.lbl_url.pack(pady = 10)
+
+        self.ent_url = tk.Entry(master = self.frm_url, width = 50, justify = 'center')
+        self.ent_url.pack(pady = 10)
+
+        self.btn_select = tk.Button(master = self.frm_url, text = "Select Video", command = self.select_video)
+        self.btn_select.pack()
+
+        self.btn_download = tk.Button(master = self.frm_url, text = "Select Download Folder", command = self.save_window)
+        self.btn_download.pack(pady = 10)
+
+        self.line0 = tk.Frame( master = self.frm_url, height = 1, bg = "black")
+        self.line0.pack(fill = tk.X, pady = 20, padx = 5)
+
+        self.lbl_yt_title = tk.Label(master = self.frm_url, text = "Video Title")
+        self.lbl_yt_title.pack(pady = 5)
+
+        self.ent_yt_title = tk.Entry(master = self.frm_url, text = "", width = 50, justify = 'center', state = tk.DISABLED)
+        self.ent_yt_title.pack()
+
+        """Resoultion Selection"""
+        self.frm_res = tk.Frame(master = self.master)
+        self.frm_res.pack()
+
+        self.lbl_res = tk.Label(master = self.frm_res, text = 'Please Select Resoultion')
+        self.lbl_res.grid(column = 1, row = 0, columnspan = 5, pady = 5)
+
+        self.resoultion = tk.StringVar(self.master, '480p')
+        self.rbtn_480p = tk.Radiobutton(master = self.frm_res, text = '480p', value = '480p', variable = self.resoultion)
+        self.rbtn_720p = tk.Radiobutton(master = self.frm_res, text = '720p', value = '720p', variable = self.resoultion)
+        self.rbtn_1080p = tk.Radiobutton(master = self.frm_res, text = '1080p', value = '1080p', variable = self.resoultion)
+        self.rbtn_1440p = tk.Radiobutton(master = self.frm_res, text = '1440p', value = '1440p', variable = self.resoultion)
+        self.rbtn_4k = tk.Radiobutton(master = self.frm_res, text = '4K', value = '2160p', variable = self.resoultion)
+
+        self.rbtn_480p.grid(column = 1, row = 1)
+        self.rbtn_720p.grid(column = 2, row = 1)
+        self.rbtn_1080p.grid(column = 3, row = 1)
+        self.rbtn_1440p.grid(column = 4, row = 1)
+        self.rbtn_4k.grid(column = 5, row = 1)
+
+        self.frm_download = tk.Frame(master = self.master)
+        self.frm_download.pack()
+
+        self.lbl_streams = tk.Label(master = self.frm_download, text = 'Aviable Streams')
+        self.lbl_streams.pack()
+        
+
+        self.txt_streams = tk.Text(master = self.frm_download, width = 50, height = 10)
+        self.txt_streams.pack()
+        
+        self.btn_download_audio = tk.Button(master = self.frm_download, text = 'Download Audio')
+        self.btn_download_audio.pack()
+        
+        
 
 
-""" video Info gaterhing """
 
-frm_url = Frame(master = window, height = 200, width = 400, )
-frm_url.pack_propagate(0)
-frm_url.pack()
 
-lbl_url = Label(master = frm_url, text = "Please Enter Video URL")
-lbl_url.pack(pady = 10)
+    def select_video(self):
+        self.resoultions = []
+        yt = YouTube(self.ent_url.get())
+        for i in yt.streams.filter(type = "video"): self.resoultions.append(i.resolution)
+        self.ent_yt_title.config(state = tk.NORMAL)
+        self.ent_yt_title.insert(0, str(yt.title))
+        self.ent_yt_title.config(state = tk.DISABLED)
+        print(str(self.resoultions))
+    
+    def save_window(self):
+        self.save_window = tk.Toplevel(self.master)
+        self.app1 = SaveDialouge(self.save_window)
 
-ent_url = Entry(master = frm_url, width = 300, justify = 'center')
-ent_url.pack(pady = 10)
 
-btn_info = Button(master = frm_url, text = "Select Video", command = video_select)
-btn_info.pack()
-
-line0 = Frame( master = frm_url, height = 1, bg = "black")
-line0.pack(fill = X, pady = 20, padx = 5)
-
-lbl_yt_title = Label(master = frm_url, text = "Video Title")
-lbl_yt_title.pack(pady = 5)
-
-ent_yt_title = Entry(master = frm_url, text = "", width = 300, justify = 'center', state = DISABLED)
-ent_yt_title.pack()
-
-line1 = Frame( master = frm_url, height = 1, bg = "black")
-line1.pack(fill = X, pady = 20, padx = 5)
-
-"""Resoultion Selection"""
-frm_res = Frame (master = window)
-frm_res.grid()
+class SaveDialouge:
+    def __init__(self, master, *args, **kwargs):
+        self.master = master
+        self.frm_save = tk.Frame(master = self.master)
+        self.frm_save.pack()
+        self.lbl_location = tk.Label (master = self.frm_save, text = 'Please select a Download Folder')
+        self.lbl_location.pack()
 
 
 
 
 
 
-window.mainloop()
 
+def main(): 
+    root = tk.Tk()
+    root.minsize(width = 1000)
+    app = MainApplication(root)
+    root.mainloop()
+    
+
+if __name__ == "__main__":
+    main()
 
