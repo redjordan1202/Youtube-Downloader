@@ -141,48 +141,71 @@ class MainApplication:
         self.lbl_res.grid(column = 1, row = 0, columnspan = 5, pady = 5)
 
         self.resoultion = tk.StringVar(self.master, '480p')
-        self.rbtn_480p = tk.Radiobutton(master = self.frm_res, text = '480p', value = '480p', variable = self.resoultion)
-        self.rbtn_720p = tk.Radiobutton(master = self.frm_res, text = '720p', value = '720p', variable = self.resoultion)
-        self.rbtn_1080p = tk.Radiobutton(master = self.frm_res, text = '1080p', value = '1080p', variable = self.resoultion)
-        self.rbtn_1440p = tk.Radiobutton(master = self.frm_res, text = '1440p', value = '1440p', variable = self.resoultion)
-        self.rbtn_4k = tk.Radiobutton(master = self.frm_res, text = '4K', value = '2160p', variable = self.resoultion)
+        self.rbtn_resoultions = ['480p','720p','1080p','1440p','2160p']
+        self.rbtn_480p = tk.Radiobutton(master = self.frm_res, text = '480p', value = '480p', variable = self.resoultion, state = tk.DISABLED)
+        self.rbtn_720p = tk.Radiobutton(master = self.frm_res, text = '720p', value = '720p', variable = self.resoultion, state = tk.DISABLED)
+        self.rbtn_1080p = tk.Radiobutton(master = self.frm_res, text = '1080p', value = '1080p', variable = self.resoultion, state = tk.DISABLED)
+        self.rbtn_1440p = tk.Radiobutton(master = self.frm_res, text = '1440p', value = '1440p', variable = self.resoultion, state = tk.DISABLED)
+        self.rbtn_2160p = tk.Radiobutton(master = self.frm_res, text = '4K', value = '2160p', variable = self.resoultion, state = tk.DISABLED)
 
         self.rbtn_480p.grid(column = 1, row = 1)
         self.rbtn_720p.grid(column = 2, row = 1)
         self.rbtn_1080p.grid(column = 3, row = 1)
         self.rbtn_1440p.grid(column = 4, row = 1)
-        self.rbtn_4k.grid(column = 5, row = 1)
+        self.rbtn_2160p.grid(column = 5, row = 1)
 
         self.frm_download = tk.Frame(master = self.master)
-        self.frm_download.pack()
+        self.frm_download.pack(pady = 10)
 
-        self.lbl_streams = tk.Label(master = self.frm_download, text = 'Aviable Streams')
-        self.lbl_streams.pack()
+        self.lbl_streams = tk.Label(master = self.frm_download, text = 'Available Streams')
+        self.lbl_streams.grid(column = 0, row = 0, columnspan = 3, pady = (5,20))
         
-
-        self.txt_streams = tk.Text(master = self.frm_download, width = 50, height = 10)
-        self.txt_streams.pack()
-        
+        self.btn_download_video = tk.Button(master = self.frm_download, text = 'Download Video')
+        self.btn_download_video.grid(column = 0, row = 3, padx = 30)
         self.btn_download_audio = tk.Button(master = self.frm_download, text = 'Download Audio')
-        self.btn_download_audio.pack()
+        self.btn_download_audio.grid(column = 2, row = 3, padx = 30)
         
         
-
-
 
 
     def select_video(self):
         self.resoultions = []
-        yt = YouTube(self.ent_url.get())
-        for i in yt.streams.filter(type = "video"): self.resoultions.append(i.resolution)
+        for resoultion in self.rbtn_resoultions:
+            exec("self.rbtn_" + str(resoultion) +'.config(state = tk.DISABLED)')
+
+        try:
+            self.yt = YouTube(self.ent_url.get())
+        except:
+            self.ent_yt_title.config(state = tk.NORMAL)
+            self.ent_yt_title.insert(0, "Please Enter a Valid URL")
+            self.ent_yt_title.config(state = tk.DISABLED)
+            return
+
+        for i in self.yt.streams.filter(type = "video"): self.resoultions.append(i.resolution)
+        self.res_list = []
+        [self.res_list.append(x) for x in self.resoultions if x not in self.res_list] 
+        print(self.res_list)
+
+        for i in self.res_list:
+            if i not in self.rbtn_resoultions:
+                self.res_list.remove(i)
+        self.res_list.remove('144p')
+        print(self.res_list)
+
+        for resoultion in self.res_list:
+            exec("self.rbtn_" + str(resoultion) +'.config(state = tk.NORMAL)')
         self.ent_yt_title.config(state = tk.NORMAL)
-        self.ent_yt_title.insert(0, str(yt.title))
+        self.ent_yt_title.insert(0, str(self.yt.title))
         self.ent_yt_title.config(state = tk.DISABLED)
-        print(str(self.resoultions))
-    
+        print(self.res_list)
+        
     def save_window(self):
         self.save_window = tk.Toplevel(self.master)
         self.app1 = SaveDialouge(self.save_window)
+
+        
+        
+
 
 
 class SaveDialouge:
@@ -201,7 +224,7 @@ class SaveDialouge:
 
 def main(): 
     root = tk.Tk()
-    root.minsize(width = 1000)
+    root.geometry('450x800')
     app = MainApplication(root)
     root.mainloop()
     
