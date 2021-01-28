@@ -1,24 +1,13 @@
 from pytube import YouTube
-import os
+import os.path
 import tkinter as tk
+from tkinter import ttk
 from tkinter import filedialog
 
+filepath = os.path.expandvars(R"C:\Users\$USERNAME\Videos")
 
 
 
-
-#see if the user wants to download audio or video
-
-def av_select():
-    global av_switch
-    print('Would you like to download Video or Audio:')
-    while True:
-        av_switch = input('Please enter \'1\' for Video and \'2\' for Audio\n')
-        if av_switch not in ('1', '2'):
-            print('Pleae make a valid selection')
-            continue
-        else:
-            break
 
 #Download Audio Stream
 
@@ -49,37 +38,6 @@ def download_location():
             print('The specified Folder does not exit')
             continue
 
-#Select the video that the user wants to use
-def video_select():
-    resoultions = []
-    yt = YouTube(ent_url.get())
-    for i in yt.streams.filter(type = "video"): resoultions.append(i.resolution)
-    ent_yt_title.config(state = tk.NORMAL)
-    ent_yt_title.insert(0, str(yt.title))
-    ent_yt_title.config(state = tk.DISABLED)
-    print(str(resoultions))
-    
-    
-
-
-
-    
-
-
-    
-
-#Select resoultion and display possible stings
-def resoultion_select():
-    global res
-    global res_list
-    while True:
-        res = input('Please enter a Resoultion:\n')
-        try:
-            res_list = yt.streams.filter(resolution= str(res))
-            return False
-        except:
-            print('You have entered an invalid resoultion')
-            continue
 
 #Select the stream to download based on the itag
 def download_stream():
@@ -116,13 +74,13 @@ class MainApplication:
         self.lbl_url.pack(pady = 10)
 
         self.ent_url = tk.Entry(master = self.frm_url, width = 50, justify = 'center')
-        self.ent_url.pack(pady = 10)
+        self.ent_url.pack(pady = 10,)
 
         self.btn_select = tk.Button(master = self.frm_url, text = "Select Video", command = self.select_video)
         self.btn_select.pack()
 
         self.btn_download = tk.Button(master = self.frm_url, text = "Select Download Folder", command = self.save_window)
-        self.btn_download.pack(pady = 10)
+        self.btn_download.pack()
 
         self.line0 = tk.Frame( master = self.frm_url, height = 1, bg = "black")
         self.line0.pack(fill = tk.X, pady = 20, padx = 5)
@@ -160,12 +118,20 @@ class MainApplication:
         self.lbl_streams = tk.Label(master = self.frm_download, text = 'Available Streams')
         self.lbl_streams.grid(column = 0, row = 0, columnspan = 3, pady = (5,20))
         
-        self.btn_download_video = tk.Button(master = self.frm_download, text = 'Download Video')
+        self.btn_download_video = tk.Button(master = self.frm_download, text = 'Download Video', command = self.download_video)
         self.btn_download_video.grid(column = 0, row = 3, padx = 30)
         self.btn_download_audio = tk.Button(master = self.frm_download, text = 'Download Audio')
         self.btn_download_audio.grid(column = 2, row = 3, padx = 30)
+        self.progress = ttk.Progressbar(master= self.frm_download,orient=tk.HORIZONTAL, length=300, mode="determinate" )
+        self.progress.grid(column = 0 , row= 4, columnspan = 3, pady = 10)
         
-        
+
+
+    def progress_check(self, chunck, file_handle, bytes_remaning):
+        self.percent = (100*(self.file_size - bytes_remaning))/self.file_size
+        if self.percent 
+
+
 
 
     def select_video(self):
@@ -174,12 +140,15 @@ class MainApplication:
             exec("self.rbtn_" + str(resoultion) +'.config(state = tk.DISABLED)')
 
         try:
-            self.yt = YouTube(self.ent_url.get())
+            self.yt = YouTube(self.ent_url.get(), on_progress_callback=self.progress_check)
         except:
             self.ent_yt_title.config(state = tk.NORMAL)
+            self.ent_yt_title.delete(0, tk.END)
             self.ent_yt_title.insert(0, "Please Enter a Valid URL")
             self.ent_yt_title.config(state = tk.DISABLED)
             return
+
+        
 
         for i in self.yt.streams.filter(type = "video"): self.resoultions.append(i.resolution)
         self.res_list = []
@@ -195,13 +164,24 @@ class MainApplication:
         for resoultion in self.res_list:
             exec("self.rbtn_" + str(resoultion) +'.config(state = tk.NORMAL)')
         self.ent_yt_title.config(state = tk.NORMAL)
+        self.ent_yt_title.delete(0, tk.END)
         self.ent_yt_title.insert(0, str(self.yt.title))
         self.ent_yt_title.config(state = tk.DISABLED)
         print(self.res_list)
         
     def save_window(self):
         self.save_window = tk.Toplevel(self.master)
+        self.save_window.geometry('400x150')
+        self.save_window.transient(self.master)
         self.app1 = SaveDialouge(self.save_window)
+        self.save_window.mainloop()
+
+    def download_video(self):
+        global filepath
+        self.file_size = self.yt.streams.filter(resolution = (str(self.resoultion.get()))).first().filesize
+        self.yt.streams.filter(resolution = (str(self.resoultion.get()))).first().download()
+        
+        
 
         
         
@@ -213,9 +193,49 @@ class SaveDialouge:
         self.master = master
         self.frm_save = tk.Frame(master = self.master)
         self.frm_save.pack()
-        self.lbl_location = tk.Label (master = self.frm_save, text = 'Please select a Download Folder')
-        self.lbl_location.pack()
+        self.path = os.path.expandvars(R"C:\Users\$USERNAME\Videos")
 
+        self.lbl_location = tk.Label (master = self.frm_save, text = 'Please select a Download Folder')
+        self.lbl_location.grid(column = 1, row = 0, columnspan = 2, pady = 10)
+
+        self.ent_location = tk.Entry (master = self.frm_save, width = 45,)
+        self.ent_location.insert(0,str(self.path))
+        self.ent_location.grid(column = 0, row = 1, columnspan = 2)
+        
+
+        self.btn_browse = tk.Button(master = self.frm_save,text = 'Browse...', width = 15, command = self.browse_folder)
+        self.btn_browse.grid(column = 3, row = 1,)
+
+        self.btn_confirm = tk.Button(master = self.frm_save, text = 'Confirm', width = 15, command = self.confirm)
+        self.btn_confirm.grid(column = 3, row = 2, pady = 10)
+
+        self.btn_default = tk.Button(master = self.frm_save, text = 'Set to Default', width = 15, command = self.set_default)
+        self.btn_default.grid(column = 1, row = 2, pady = 10)
+
+    def browse_folder(self):
+        self.path = filedialog.askdirectory()
+        self.ent_location.delete(0, tk.END)
+        self.ent_location.insert(0,str(self.path))
+        print(self.path)
+    
+    def set_default(self):
+        self.path = os.path.expandvars(R"C:\Users\$USERNAME\Videos")
+        self.ent_location.delete(0, tk.END)
+        self.ent_location.insert(0,str(self.path))
+    
+    def confirm(self):
+        global filepath
+        filepath = str(self.path)
+        print(filepath)
+        self.master.destroy()
+
+
+
+    
+        
+
+        
+            
 
 
 
