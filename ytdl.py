@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 import threading
+from tkinter import messagebox
 
 filepath = os.path.expandvars(R"C:\Users\$USERNAME\Videos")
 
@@ -13,7 +14,7 @@ class MainApplication:
         self.filepath = os.path.expandvars(R"C:\Users\$USERNAME\Videos")
 
         """video Select"""
-        self.frm_url = tk.Frame(master = self.master, height = 260, width = 450, highlightbackground = 'black', highlightthickness = 1)
+        self.frm_url = tk.Frame(master = self.master, height = 200, width = 450)
         self.frm_url.pack_propagate(0)
         self.frm_url.pack(pady = 5)
 
@@ -29,15 +30,12 @@ class MainApplication:
         self.btn_download = tk.Button(master = self.frm_url, text = "Select Download Folder", command = self.save_window)
         self.btn_download.pack()
 
-        self.line0 = tk.Frame( master = self.frm_url, height = 1, bg = "black")
-        self.line0.pack(fill = tk.X, pady = 20, padx = 5)
-
-        self.lbl_yt_title = tk.Label(master = self.frm_url, text = "Video Title")
+        self.lbl_yt_title = tk.Label(master = self.frm_url, text = "Video Title:")
         self.lbl_yt_title.pack(pady = 5)
 
-        self.ent_yt_title = tk.Entry(master = self.frm_url, text = "", width = 50, justify = 'center', state = tk.DISABLED)
-        self.ent_yt_title.pack()
-
+        self.lbl_yt_title= tk.Label(master = self.frm_url, text = 'Please Select Video')
+        self.lbl_yt_title.pack()
+        
         """Resoultion Selection"""
         self.frm_res = tk.Frame(master = self.master)
         self.frm_res.pack()
@@ -65,24 +63,27 @@ class MainApplication:
         self.lbl_streams = tk.Label(master = self.frm_download, text = 'Available Streams')
         self.lbl_streams.grid(column = 0, row = 0, columnspan = 3, pady = (5,20))
         
-        self.btn_download_video = tk.Button(master = self.frm_download, text = 'Download Video', command = self.start_download_video)
+        self.btn_download_video = tk.Button(master = self.frm_download, text = 'Download Video', command = self.start_download_video, state = tk.DISABLED)
         self.btn_download_video.grid(column = 0, row = 3, padx = 30)
-        self.btn_download_audio = tk.Button(master = self.frm_download, text = 'Download Audio', command = self.start_download_audio)
+        self.btn_download_audio = tk.Button(master = self.frm_download, text = 'Download Audio', command = self.start_download_audio, state = tk.DISABLED)
         self.btn_download_audio.grid(column = 2, row = 3, padx = 30)
         self.lbl_progress = tk.Label(master = self.frm_download, text = 'Download Status: Waitng for download')
         self.lbl_progress.grid(column = 0 , row= 4, columnspan = 3, pady = 10)
         self.progress = ttk.Progressbar(master= self.frm_download,orient=tk.HORIZONTAL, length=300, mode="determinate" )
         self.progress.grid(column = 0 , row= 5, columnspan = 3, pady = 10)
         
+        self.butons = [self.rbtn_480p, self.rbtn_720p, self.rbtn_1080p, self.rbtn_1440p, self.rbtn_2160p, self.btn_select, self.btn_download, self.btn_download_video, self.btn_download_audio]
+
     def progress_check(self, chunck, file_handle, bytes_remaning):
         self.percent = (100*(self.file_size - bytes_remaning))/self.file_size
         if self.percent < 100:
             self.progress['value'] = self.percent
             self.lbl_progress.config(text = "Download Status: {:00.0f}% Downloaded".format(self.percent))
-            print(self.percent)
         else:
             self.progress['value'] = 100
             self.lbl_progress.config(text = "Download Status: Download Complete!")
+            for x in self.butons:
+                x.config(state = tk.NORMAL)
             
     def select_video(self):
         self.resoultions = []
@@ -92,31 +93,23 @@ class MainApplication:
         try:
             self.yt = YouTube(self.ent_url.get())
         except:
-            self.ent_yt_title.config(state = tk.NORMAL)
-            self.ent_yt_title.delete(0, tk.END)
-            self.ent_yt_title.insert(0, "Please Enter a Valid URL")
-            self.ent_yt_title.config(state = tk.DISABLED)
+            self.lbl_yt_title.config(text = 'Please Enter a Valid Video URL')
             return
 
         for i in self.yt.streams.filter(type = "video"): self.resoultions.append(i.resolution)
         self.res_list = []
         [self.res_list.append(x) for x in self.resoultions if x not in self.res_list] 
-        print(self.res_list)
 
         for i in self.res_list:
             if i not in self.rbtn_resoultions:
                 self.res_list.remove(i)
         self.res_list.remove('144p')
-        print(self.res_list)
 
         for resoultion in self.res_list:
             exec("self.rbtn_" + str(resoultion) +'.config(state = tk.NORMAL)')
-        self.ent_yt_title.config(state = tk.NORMAL)
-        self.ent_yt_title.delete(0, tk.END)
-        self.ent_yt_title.insert(0, str(self.yt.title))
-        self.ent_yt_title.config(state = tk.DISABLED)
-        print(self.res_list)
-        
+        self.lbl_yt_title.config(text = str(self.yt.title))
+        self.btn_download_video.config(state = tk.NORMAL)
+        self.btn_download_audio.config(state = tk.NORMAL)
 
     def save_window(self):
         self.save_window = tk.Toplevel(self.master)
@@ -127,20 +120,29 @@ class MainApplication:
 
     def video_download(self):
         global filepath
-        self.file_size = self.yt.streams.filter(resolution = (str(self.resoultion.get()))).first().filesize
+        try:
+            self.file_size = self.yt.streams.filter(resolution = (str(self.resoultion.get()))).first().filesize
+        except:
+            self.lbl_progress.config(text = "Download Status: Error, Please Ensure you have a valid URL")
+            return
+
+        for x in self.butons:
+            x.config(state = tk.DISABLED)
+        
         self.yt.streams.filter(resolution = (str(self.resoultion.get()))).first().download(str(filepath))
 
 
     def audio_download(self):
         global filepath
         self.file_size = self.yt.streams.filter(only_audio=True).first().filesize
-        self.yt.streams.filter(only_audio=True).first().download( str(filepath), filename_prefix = 'audio')
+        self.yt.streams.filter(only_audio=True).first().download( str(filepath), filename_prefix = 'Audio.')
 
 
     def start_download_video(self):
         global filepath
         threading.Thread(target=self.yt.register_on_progress_callback(self.progress_check)).start()
         threading.Thread(target=self.video_download).start()
+        
 
     def start_download_audio(self):
         global filepath
@@ -177,7 +179,7 @@ class SaveDialouge:
         self.path = filedialog.askdirectory()
         self.ent_location.delete(0, tk.END)
         self.ent_location.insert(0,str(self.path))
-        print(self.path)
+        
     
 
     def set_default(self):
@@ -188,16 +190,19 @@ class SaveDialouge:
 
     def confirm(self):
         global filepath
-        filepath = str(self.path)
-        print(filepath)
+        self.path = self.ent_location.get()
+        if os.path.isdir(self.path) == True:
+            filepath = str(self.path)
+        else:
+            messagebox.showerror(title='Error', message='Please Select a Valid Save Location')
+            return
         self.master.destroy()
 
 
 def main(): 
     root = tk.Tk()
-    root.geometry('400x500')
+    root.geometry('400x460')
     app = MainApplication(root)
     root.mainloop()
     
 main()
-
