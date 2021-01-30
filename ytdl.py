@@ -1,7 +1,7 @@
 from pytube import YouTube
 import os.path
 import tkinter as tk
-from tkinter import ttk
+from tkinter import PhotoImage, ttk
 from tkinter import filedialog
 import threading
 from tkinter import messagebox
@@ -115,7 +115,11 @@ class MainApplication:
 
     def save_window(self):
         self.save_window = tk.Toplevel(self.master)
-        self.save_window.geometry('400x150')
+        self.icon = PhotoImage(file = "folder.png")
+        self.save_window.iconphoto(False, self.icon)
+        self.save_window.geometry('400x120')
+        self.save_window.resizable(False,False)
+        self.save_window.title('Folder Select')
         self.save_window.transient(self.master)
         self.app1 = SaveDialouge(self.save_window)
         self.save_window.mainloop()
@@ -171,10 +175,10 @@ class SaveDialouge:
         self.btn_browse.grid(column = 3, row = 1,)
 
         self.btn_confirm = tk.Button(master = self.frm_save, text = 'Confirm', width = 15, command = self.confirm)
-        self.btn_confirm.grid(column = 3, row = 2, pady = 10)
+        self.btn_confirm.grid(column = 3, row = 2, pady = 15)
 
         self.btn_default = tk.Button(master = self.frm_save, text = 'Set to Default', width = 15, command = self.set_default)
-        self.btn_default.grid(column = 1, row = 2, pady = 10)
+        self.btn_default.grid(column = 1, row = 2, pady = 15)
 
 
     def browse_folder(self):
@@ -203,7 +207,11 @@ class SaveDialouge:
 
 def main(): 
     root = tk.Tk()
+    icon = PhotoImage(file = "icon.png")
+    root.title('Youtube Video Downloader')
+    root.iconphoto(False, icon)
     root.geometry('400x460')
+    root.resizable(False,False)
     app = MainApplication(root)
     root.mainloop()
     
