@@ -57,6 +57,7 @@ class MainApplication:
         self.rbtn_1440p.grid(column = 4, row = 1)
         self.rbtn_2160p.grid(column = 5, row = 1)
 
+        """Download and download progress"""
         self.frm_download = tk.Frame(master = self.master)
         self.frm_download.pack(pady = 10)
 
@@ -74,6 +75,7 @@ class MainApplication:
         
         self.butons = [self.rbtn_480p, self.rbtn_720p, self.rbtn_1080p, self.rbtn_1440p, self.rbtn_2160p, self.btn_select, self.btn_download, self.btn_download_video, self.btn_download_audio]
 
+        """Functions"""
     def progress_check(self, chunck, file_handle, bytes_remaning):
         self.percent = (100*(self.file_size - bytes_remaning))/self.file_size
         if self.percent < 100:
@@ -149,7 +151,7 @@ class MainApplication:
         threading.Thread(target=self.yt.register_on_progress_callback(self.progress_check)).start()
         threading.Thread(target=self.audio_download).start()
         
-        
+        """Pop Up window for save location selection"""
 class SaveDialouge:
     def __init__(self, master, *args, **kwargs):
         self.master = master
