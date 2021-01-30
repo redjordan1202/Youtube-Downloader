@@ -3,68 +3,15 @@ import os.path
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
+import threading
 
 filepath = os.path.expandvars(R"C:\Users\$USERNAME\Videos")
-
-
-
-
-#Download Audio Stream
-
-def audio_download():
-    global yt
-    global file_path
-    print('The Video has the following audio streams')
-    print(*yt.streams.filter(only_audio=True), sep='\n')
-    while True:
-        itag = input('Please Enter the Itag of the stream you want to download:\n')
-        try:
-            yt.streams.get_by_itag(str(itag)).download(output_path=str(file_path), filename_prefix='Audio-')
-            print('The audio stream has been downloaded')
-            return True
-        except:
-            print('You have entered an invalid Itag')
-            continue
-        
-#Define Download location 
-def download_location():
-    global file_path
-    while True:
-        file_path = input('Please enter the Folder to save the Video in\nPlease enter the Full Path')
-        x = os.path.exists(path = str(file_path))
-        if x == True:
-            break
-        else:
-            print('The specified Folder does not exit')
-            continue
-
-
-#Select the stream to download based on the itag
-def download_stream():
-    global file_path
-    global yt
-    global res_list
-    print('The Video has the following streams')
-    print(*res_list, sep='\n')
-    while True:
-        itag = input('Please Enter the Itag of the stream you want to download:\n')
-        try:
-            yt.streams.get_by_itag(str(itag)).download(str(file_path))
-            print('The video has been downloaded')
-            return True
-        except:
-            print('You have entered an invalid Itag')
-            continue
-
-
-
-
-    
-
 
 class MainApplication:
     def __init__(self,master, *args, **kwargs):
         self.master = master
+        self.filepath = os.path.expandvars(R"C:\Users\$USERNAME\Videos")
+
         """video Select"""
         self.frm_url = tk.Frame(master = self.master, height = 260, width = 450, highlightbackground = 'black', highlightthickness = 1)
         self.frm_url.pack_propagate(0)
@@ -118,37 +65,38 @@ class MainApplication:
         self.lbl_streams = tk.Label(master = self.frm_download, text = 'Available Streams')
         self.lbl_streams.grid(column = 0, row = 0, columnspan = 3, pady = (5,20))
         
-        self.btn_download_video = tk.Button(master = self.frm_download, text = 'Download Video', command = self.download_video)
+        self.btn_download_video = tk.Button(master = self.frm_download, text = 'Download Video', command = self.start_download_video)
         self.btn_download_video.grid(column = 0, row = 3, padx = 30)
-        self.btn_download_audio = tk.Button(master = self.frm_download, text = 'Download Audio')
+        self.btn_download_audio = tk.Button(master = self.frm_download, text = 'Download Audio', command = self.start_download_audio)
         self.btn_download_audio.grid(column = 2, row = 3, padx = 30)
+        self.lbl_progress = tk.Label(master = self.frm_download, text = 'Download Status: Waitng for download')
+        self.lbl_progress.grid(column = 0 , row= 4, columnspan = 3, pady = 10)
         self.progress = ttk.Progressbar(master= self.frm_download,orient=tk.HORIZONTAL, length=300, mode="determinate" )
-        self.progress.grid(column = 0 , row= 4, columnspan = 3, pady = 10)
+        self.progress.grid(column = 0 , row= 5, columnspan = 3, pady = 10)
         
-
-
     def progress_check(self, chunck, file_handle, bytes_remaning):
         self.percent = (100*(self.file_size - bytes_remaning))/self.file_size
-        if self.percent 
-
-
-
-
+        if self.percent < 100:
+            self.progress['value'] = self.percent
+            self.lbl_progress.config(text = "Download Status: {:00.0f}% Downloaded".format(self.percent))
+            print(self.percent)
+        else:
+            self.progress['value'] = 100
+            self.lbl_progress.config(text = "Download Status: Download Complete!")
+            
     def select_video(self):
         self.resoultions = []
         for resoultion in self.rbtn_resoultions:
             exec("self.rbtn_" + str(resoultion) +'.config(state = tk.DISABLED)')
 
         try:
-            self.yt = YouTube(self.ent_url.get(), on_progress_callback=self.progress_check)
+            self.yt = YouTube(self.ent_url.get())
         except:
             self.ent_yt_title.config(state = tk.NORMAL)
             self.ent_yt_title.delete(0, tk.END)
             self.ent_yt_title.insert(0, "Please Enter a Valid URL")
             self.ent_yt_title.config(state = tk.DISABLED)
             return
-
-        
 
         for i in self.yt.streams.filter(type = "video"): self.resoultions.append(i.resolution)
         self.res_list = []
@@ -169,6 +117,7 @@ class MainApplication:
         self.ent_yt_title.config(state = tk.DISABLED)
         print(self.res_list)
         
+
     def save_window(self):
         self.save_window = tk.Toplevel(self.master)
         self.save_window.geometry('400x150')
@@ -176,18 +125,29 @@ class MainApplication:
         self.app1 = SaveDialouge(self.save_window)
         self.save_window.mainloop()
 
-    def download_video(self):
+    def video_download(self):
         global filepath
         self.file_size = self.yt.streams.filter(resolution = (str(self.resoultion.get()))).first().filesize
-        self.yt.streams.filter(resolution = (str(self.resoultion.get()))).first().download()
-        
-        
-
-        
-        
+        self.yt.streams.filter(resolution = (str(self.resoultion.get()))).first().download(str(filepath))
 
 
+    def audio_download(self):
+        global filepath
+        self.file_size = self.yt.streams.filter(only_audio=True).first().filesize
+        self.yt.streams.filter(only_audio=True).first().download( str(filepath), filename_prefix = 'audio')
 
+
+    def start_download_video(self):
+        global filepath
+        threading.Thread(target=self.yt.register_on_progress_callback(self.progress_check)).start()
+        threading.Thread(target=self.video_download).start()
+
+    def start_download_audio(self):
+        global filepath
+        threading.Thread(target=self.yt.register_on_progress_callback(self.progress_check)).start()
+        threading.Thread(target=self.audio_download).start()
+        
+        
 class SaveDialouge:
     def __init__(self, master, *args, **kwargs):
         self.master = master
@@ -212,17 +172,20 @@ class SaveDialouge:
         self.btn_default = tk.Button(master = self.frm_save, text = 'Set to Default', width = 15, command = self.set_default)
         self.btn_default.grid(column = 1, row = 2, pady = 10)
 
+
     def browse_folder(self):
         self.path = filedialog.askdirectory()
         self.ent_location.delete(0, tk.END)
         self.ent_location.insert(0,str(self.path))
         print(self.path)
     
+
     def set_default(self):
         self.path = os.path.expandvars(R"C:\Users\$USERNAME\Videos")
         self.ent_location.delete(0, tk.END)
         self.ent_location.insert(0,str(self.path))
     
+
     def confirm(self):
         global filepath
         filepath = str(self.path)
@@ -230,25 +193,11 @@ class SaveDialouge:
         self.master.destroy()
 
 
-
-    
-        
-
-        
-            
-
-
-
-
-
-
 def main(): 
     root = tk.Tk()
-    root.geometry('450x800')
+    root.geometry('400x500')
     app = MainApplication(root)
     root.mainloop()
     
-
-if __name__ == "__main__":
-    main()
+main()
 
