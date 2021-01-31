@@ -1,2 +1,6 @@
 # Youtube-Downloader
-Youtube downloader built in Python
+Python based GUI Youtube video downloader.
+Supports downloading Videos and Audio up to 4k resoultions.
+
+How to use 
+

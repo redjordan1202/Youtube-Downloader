@@ -8,6 +8,17 @@ from tkinter import messagebox
 
 filepath = os.path.expandvars(R"C:\Users\$USERNAME\Videos")
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+
 class MainApplication:
     def __init__(self,master, *args, **kwargs):
         self.master = master
@@ -116,6 +127,12 @@ class MainApplication:
     def save_window(self):
         self.save_window = tk.Toplevel(self.master)
         self.save_window.geometry('400x150')
+        self.icon = PhotoImage(file = resource_path("folder.png"))
+        self.save_window.iconphoto(False, self.icon)
+        self.save_window.geometry('400x120')
+        self.save_window.resizable(False,False)
+        self.save_window.title('Folder Select')
+
         self.save_window.transient(self.master)
         self.app1 = SaveDialouge(self.save_window)
         self.save_window.mainloop()
@@ -203,6 +220,10 @@ class SaveDialouge:
 
 def main(): 
     root = tk.Tk()
+    icon = tk.PhotoImage(file = resource_path("icon.png"))
+    root.title('Youtube Video Downloader')
+    root.iconphoto(False, icon)
+
     root.geometry('400x460')
     app = MainApplication(root)
     root.mainloop()

@@ -1,2 +1,6 @@
 
 test.py
+*.exe
+*.pyc
+*.exe
+*.pyc
