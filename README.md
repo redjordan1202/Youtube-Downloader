@@ -14,4 +14,5 @@ How to use:
 -Click on either the Video or Audio download button. Your download will start and the progress bar will update with the current progress.
 
 Known Issues:
-Currently I am unaware of any issues. However I am always on the look out for any bugs or issues that can be found with the program. I tried to add error handling to all steps in the process but its entirely possible I missed something. If you do finding any issues please report them and if you have any suggest fixes to any issues please feel free to let me know.
+Pytube, the library used to download youtube videos, is currently bugged. Most likely due to a recent change at how Youtube handles request to their server. 
+I am currently working on a rewrite of this project using a different library to handle video downloads. ETA for completion on that is unknown.
